@@ -1,0 +1,46 @@
+//Aktywne punkty grupowane tygodniami
+SELECT WEEK(allsafe_order.created_at) as week, authentication_user.email, COUNT(*) as num_orders, allsafe_company.name
+FROM allsafe_order
+JOIN authentication_user ON authentication_user.id=allsafe_order.user_id
+JOIN allsafe_company ON allsafe_company.id=authentication_user.company_id
+WHERE allsafe_order.success = 1 AND allsafe_order.created_at BETWEEN "2023-01-01" AND "2023-02-01"
+GROUP BY WEEK(allsafe_order.created_at), authentication_user.email, allsafe_company.name;
+
+
+//top ordery
+SELECT 
+    allsafe_device.id,
+    allsafe_device.name,
+    COUNT(*) AS count
+FROM allsafe_order 
+JOIN authentication_user ON allsafe_order.user_id = authentication_user.id
+JOIN allsafe_company ON allsafe_company.id = authentication_user.company_id
+JOIN allsafe_orderallsafe ON allsafe_order.data_id = allsafe_orderallsafe.id
+JOIN allsafe_pattern ON allsafe_orderallsafe.pattern_id = allsafe_pattern.id
+JOIN allsafe_device ON allsafe_pattern.device_id = allsafe_device.id
+JOIN allsafe_material ON allsafe_material.id = allsafe_orderallsafe.material_id
+WHERE 
+    allsafe_order.created_at BETWEEN '2023-05-01%' AND '2023-06-01%' 
+    AND allsafe_company.name LIKE "*****"
+GROUP BY allsafe_device.id, allsafe_device.name;
+
+
+//nowe punkty które dołączyły w danych dniach
+SELECT authentication_user.email, COUNT(*) as num_orders, allsafe_company.name
+FROM allsafe_order
+JOIN authentication_user ON authentication_user.id=allsafe_order.user_id
+JOIN allsafe_company ON allsafe_company.id=authentication_user.company_id
+WHERE allsafe_order.success = 1 
+AND allsafe_order.created_at >= '2023-01-08' AND allsafe_order.created_at < '2023-01-15'
+AND allsafe_company.name NOT LIKE "Serwis"
+AND NOT EXISTS (
+    SELECT 1 
+    FROM allsafe_order 
+    WHERE allsafe_order.user_id = authentication_user.id 
+    AND allsafe_order.created_at < '2023-01-08'
+)
+GROUP BY authentication_user.email;
+
+
+
+
